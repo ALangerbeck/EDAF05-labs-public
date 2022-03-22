@@ -4,8 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-#define PRINT		0	/* enable/disable prints. */
+#define PRINT		1	/* enable/disable prints. */
 
 #if PRINT
 #define pr(...)		do { fprintf(stderr, __VA_ARGS__); } while (0)
@@ -44,47 +45,58 @@ int main(int argc, char* argv[])
         int proposees[n][n];
         int proposers[n][n];
         memset(proposees, 0, n*sizeof(proposees[0]));
-        memset(proposers, 10, n*sizeof(proposers[0]));
+        //memset(proposers, 10, n*sizeof(proposers[0]));
         pr("Init test: %d\n",proposees[0][0]);
 
         int proposedTo[n][n];
 
         int partners[n];
-
+        for (int i = 0; i < n; i++)
+        {
+                partners[i] = 0;
+        }
+        
+        int isProposee;
+        int personIndex;
         for (int i = 0; i < 2*n;i++){
-                partners[i] = -1;
-                int personIndex;
-                int input = next_int();
+                int input = 0;
                         while(input == 0){
                                 input = next_int();
                         }
                 personIndex = input - 1;
-                int isProposee;
-                if (proposees[personIndex][0] == 0){
+                
+                if (partners[i] == 0){
                         isProposee = 1;
+                        partners[i] = -1;
+                        pr("Added proposee %d :",input);
                 }else{  
                         isProposee = 0;
+                        pr("Added proposer %d :",input);
                 }
                 for (int j = 0; j < n;j++){
-                        int input = next_int();
+                        input = 0;
                         while(input == 0){
                                 input = next_int();
                         }
                         if(isProposee){
-                                proposees[personIndex][j] = input;
+                                proposees[personIndex][j] = input-1;
                         }else{
-                                proposers[personIndex][j] = input;
+                                proposers[personIndex][j] = input-1;
                                 proposedTo[personIndex][j] = 0;
                         }
+                        pr(" %d ",input );
                 }
+                pr("\n");
+                sleep(0.5);
+        
         }
+        fclose(in);
 
         if (PRINT) {
-                fclose(in);
                 pr("proposees:\n");
                 for (int i = 0; i < n;i++){
                         for (int j = 0; j < n;j++){
-                                pr("%d ",proposees[i][j]);
+                                pr("%d ",proposees[i][j]+1);
                 
                         }       
                         pr("\n");
@@ -93,23 +105,43 @@ int main(int argc, char* argv[])
                 pr("Proposers:\n");
                 for (int i = 0; i < n;i++){
                         for (int j = 0; j < n;j++){
-                                pr("%d ",proposers[i][j]);
+                                pr("%d ",proposers[i][j]+1);
                 
                         }       
                         pr("\n");
                 }
         }
 
+
+
+        /*
         //The algorithm
         struct list_proposers temp = {0,NULL};
+        
         struct list_proposers* first = &temp;
-        int proposerIndex; 
-        int proposeeIndex;
+        pr("inputed: %d\n",first->index+1);
         for(int i = 1; i < n;i++){
                 struct  list_proposers Newtemp = {i,first};
                 first = &Newtemp;
+                pr("inputed: %d\n",first->index+1);
         }
 
+        //struct list_proposers* testFirst = first;
+        //struct list_proposers* testTemp;
+
+        pr("Initial list: ");
+        while (first != NULL)
+        {
+                sleep(1);
+                pr(" %d ",first->index+1);
+                 
+                first = first->next;
+        }
+        pr("\n");
+        
+
+        int proposerIndex; 
+        int proposeeIndex;
         while(first != NULL){
                 pr("First in list is: %d\n",first->index +1);
                 proposerIndex = first->index; 
@@ -128,23 +160,31 @@ int main(int argc, char* argv[])
 
                 if (partners[proposeeIndex] == -1){
                         partners[proposeeIndex] = proposerIndex;
-                        pr("A singel propsee is paired\n");
+                        pr("A singel propsee is paired (%d,%d)\n",proposeeIndex+1,proposerIndex+1);
                 }else if (proposees[proposeeIndex][partners[proposeeIndex]] 
                                 > proposees[proposeeIndex][proposerIndex]){
                         struct list_proposers temp = {partners[proposeeIndex],first};
                         first = &temp;
                         partners[proposeeIndex] = proposerIndex;
-                        pr("A proposer is swaped\n");
+                        pr("A proposer is swaped (%d,%d)\n",proposeeIndex+1,proposerIndex+1);
                 }else{
                         struct list_proposers temp = {proposerIndex,first};
                         first = &temp;
-                        pr("A failed proposal\n");
+                        pr("A failed proposal , %d to %d\n",proposeeIndex+1,proposerIndex+1);
                 }
+                pr("current pairing: ");
+                for(int i = 0; i < n; i++)
+                {
+                        pr("(%d,%d)",i+1,partners[i]+1);
+                }
+                pr("\n");
+                if(PRINT){sleep(3);}
+                
         }
 
         for(int i = 0; i < n;i++){
                 printf("%d\n",partners[i]+1);
         }
-
+        */
 	return 0;
 }
