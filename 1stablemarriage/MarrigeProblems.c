@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define PRINT		1	/* enable/disable prints. */
+#define PRINT		0	/* enable/disable prints. */
 
 #if PRINT
 #define pr(...)		do { fprintf(stderr, __VA_ARGS__); } while (0)
@@ -65,9 +65,9 @@ int main(int argc, char* argv[])
                         }
                 personIndex = input - 1;
                 
-                if (partners[i] == 0){
+                if (partners[personIndex] == 0){
                         isProposee = 1;
-                        partners[i] = -1;
+                        partners[personIndex] = -1;
                         pr("Added proposee %d :",input);
                 }else{  
                         isProposee = 0;
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
                         pr(" %d ",input );
                 }
                 pr("\n");
-                sleep(0.5);
+                
         
         }
         fclose(in);
@@ -114,21 +114,22 @@ int main(int argc, char* argv[])
 
 
 
-        /*
-        //The algorithm
-        struct list_proposers temp = {0,NULL};
         
-        struct list_proposers* first = &temp;
+        //The algorithm
+        
+        struct  list_proposers proposers_structs[n];
+        proposers_structs[0].index = 0;
+        proposers_structs[0].next = NULL;
+        struct list_proposers* first = &proposers_structs[0];
         pr("inputed: %d\n",first->index+1);
         for(int i = 1; i < n;i++){
-                struct  list_proposers Newtemp = {i,first};
-                first = &Newtemp;
+                proposers_structs[i].index = i;
+                proposers_structs[i].next = first;
+                first = &proposers_structs[i];
                 pr("inputed: %d\n",first->index+1);
         }
 
-        //struct list_proposers* testFirst = first;
-        //struct list_proposers* testTemp;
-
+        /*
         pr("Initial list: ");
         while (first != NULL)
         {
@@ -138,8 +139,8 @@ int main(int argc, char* argv[])
                 first = first->next;
         }
         pr("\n");
+        */
         
-
         int proposerIndex; 
         int proposeeIndex;
         while(first != NULL){
@@ -178,13 +179,12 @@ int main(int argc, char* argv[])
                         pr("(%d,%d)",i+1,partners[i]+1);
                 }
                 pr("\n");
-                if(PRINT){sleep(3);}
+                //if(PRINT){sleep(3);}
                 
         }
 
         for(int i = 0; i < n;i++){
                 printf("%d\n",partners[i]+1);
         }
-        */
 	return 0;
 }
