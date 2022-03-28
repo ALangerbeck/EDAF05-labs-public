@@ -23,6 +23,7 @@ struct list_proposers{
 	list_proposers*	next;
 };
 
+//Function for getting ints from input
 static int next_int()
 {
         int     x;
@@ -108,13 +109,17 @@ int main(int argc, char* argv[])
                 }
         }
         
+        //Information about proposer into first node of list and putting into list
         list_proposers * proposers_structs = (list_proposers *) malloc(n*sizeof(list_proposers));
         proposers_structs[0].index = 0;
         proposers_structs[0].proposeeIndex =0;
         proposers_structs[0].next = NULL;
+        
         list_proposers * first = (list_proposers *) malloc(sizeof(list_proposers));
         first = &proposers_structs[0];
         pr("inputed: %d\n",first->index+1);
+
+        //creating the rest and putting them into list
         for(int i = 1; i < n;i++){
                 proposers_structs[i].index = i;
                 proposers_structs[i].next = first;
@@ -126,6 +131,8 @@ int main(int argc, char* argv[])
         int proposerIndex; 
         int proposeeIndex;
         list_proposers * currentProposer;
+
+        //GS alorithm
         while(first != NULL){
                 pr("First in list is: %d\n",first->index +1);
                 currentProposer = first; 
@@ -164,6 +171,7 @@ int main(int argc, char* argv[])
                 pr("\n");
         }
 
+        //Final Printout
         for(int i = 0; i < n;i++){
                 printf("%d\n",partners[i]+1);
         }
