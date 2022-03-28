@@ -19,6 +19,7 @@ static char* progname;
 typedef struct list_proposers list_proposers;
 struct list_proposers{
 	int     index;
+        int     proposeeIndex;
 	list_proposers*	next;
 };
 
@@ -32,7 +33,6 @@ static int next_int()
         return x;
 }
 
-
 int main(int argc, char* argv[])
 {   
         FILE*		in;	/* input file set to stdin	*/
@@ -45,8 +45,6 @@ int main(int argc, char* argv[])
         int (*proposees)[n][n] = calloc(n*n,sizeof(proposees));
         pr("test 2\n");
         int (*proposers)[n][n] = calloc(n*n,sizeof(proposers));
-        //memset(proposees, 0, n*sizeof(proposees[0]));
-        //memset(proposers, 10, n*sizeof(proposers[0]));
         pr("test2\n");
         pr("Init test: %d\n",*(proposees)[0][0]);
 
@@ -66,7 +64,6 @@ int main(int argc, char* argv[])
                                 input = next_int();
                         }
                 personIndex = input - 1;
-                
                 if (partners[personIndex] == 0){
                         isProposee = 1;
                         partners[personIndex] = -1;
@@ -78,24 +75,16 @@ int main(int argc, char* argv[])
                 for (int j = 0; j < n;j++){
                         input = 0;
                         while(input == 0){
-                                input = next_int();
-                        }
+                                input = next_int(); }
                         if(isProposee){
-
-                                //proposees[personIndex][j] = input-1;
-                                (*proposees)[personIndex][input-1] = j+1;
+                                (*proposees)[personIndex][input-1] = j;
                         }else{
-                                //proposers[personIndex][j] = input-1;
-                                (*proposers)[personIndex][input-1] = j+1;
+                                (*proposers)[personIndex][j] = input-1;
                                 (*proposedTo)[personIndex][j] = 0;
                         }
-
-                        pr(" %d ",input );
-                        
+                        pr(" %d ",input );      
                 }
                 pr("\n");
-                
-        
         }
         fclose(in);
 
@@ -109,7 +98,7 @@ int main(int argc, char* argv[])
                         pr("\n");
                 }
 
-                pr("Proposers:\n");
+                pr("Proposers prefrence list:\n");
                 for (int i = 0; i < n;i++){
                         for (int j = 0; j < n;j++){
                                 pr("%d ",(*proposers)[i][j]+1);
@@ -118,14 +107,10 @@ int main(int argc, char* argv[])
                         pr("\n");
                 }
         }
-
-
-
-        
-        //The algorithm
         
         list_proposers * proposers_structs = (list_proposers *) malloc(n*sizeof(list_proposers));
         proposers_structs[0].index = 0;
+        proposers_structs[0].proposeeIndex =0;
         proposers_structs[0].next = NULL;
         list_proposers * first = (list_proposers *) malloc(sizeof(list_proposers));
         first = &proposers_structs[0];
@@ -133,56 +118,56 @@ int main(int argc, char* argv[])
         for(int i = 1; i < n;i++){
                 proposers_structs[i].index = i;
                 proposers_structs[i].next = first;
+                proposers_structs[i].proposeeIndex = 0;
                 first = &proposers_structs[i];
                 pr("inputed: %d\n",first->index+1);
         }
         
         int proposerIndex; 
         int proposeeIndex;
+        list_proposers * currentProposer;
         while(first != NULL){
                 pr("First in list is: %d\n",first->index +1);
-                proposerIndex = first->index; 
-                pr("Proposer index: %d\n",proposerIndex);
+                currentProposer = first; 
                 first = first->next;
-                int rank = n+1;
-                for( int i = 0; i < n;i++){
-                        if (((*proposedTo)[proposerIndex][i] != 1) && ((*proposers)[proposerIndex][i] < rank)){
-                                proposeeIndex = i;
-                                rank = (*proposers)[proposerIndex][i];
-                                 pr("Rank of %d is %d\n",i,rank);
-                                if(rank == 1){break;}
-                        }
-                }
-
-                (*proposedTo)[proposerIndex][proposeeIndex] = 1;
-
+                currentProposer->next = NULL;
+                pr("Proposer index: %d\n",currentProposer->index+1);
+                
+                proposerIndex = currentProposer->index;
+                proposeeIndex = (*proposers)[proposerIndex][currentProposer->proposeeIndex];
+                //Pairing with a single proposee
                 if (partners[proposeeIndex] == -1){
-                        partners[proposeeIndex] = proposerIndex;
+                        partners[proposeeIndex] = currentProposer->index;
                         pr("A singel propsee is paired (%d,%d)\n",proposeeIndex+1,proposerIndex+1);
+
+                //Breking up a marrige and becoming new parter
                 }else if ((*proposees)[proposeeIndex][partners[proposeeIndex]] 
                                 > (*proposees)[proposeeIndex][proposerIndex]){
-                        list_proposers temp = {partners[proposeeIndex],first};
-                        first = &temp;
+                        proposers_structs[partners[proposeeIndex]].next = first;
+                        first = &proposers_structs[partners[proposeeIndex]];
                         partners[proposeeIndex] = proposerIndex;
                         pr("A proposer is swaped (%d,%d)\n",proposeeIndex+1,proposerIndex+1);
-                }else{
-                        list_proposers temp = {proposerIndex,first};
-                        first = &temp;
+
+                //Still single back in the list
+                }else{  
+                        currentProposer->next = first;
+                        first = currentProposer;
                         pr("A failed proposal , %d to %d\n",proposeeIndex+1,proposerIndex+1);
                 }
+                currentProposer->proposeeIndex += 1;
+               
                 pr("current pairing: ");
                 for(int i = 0; i < n; i++)
                 {
                         pr("(%d,%d)",i+1,partners[i]+1);
                 }
                 pr("\n");
-                //if(PRINT){sleep(3);}
-                
         }
 
         for(int i = 0; i < n;i++){
                 printf("%d\n",partners[i]+1);
         }
+
         free(proposees);
         free(proposers);
         free(proposedTo);
