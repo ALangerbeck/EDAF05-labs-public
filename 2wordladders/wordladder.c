@@ -6,7 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define PRINT 1 /* enable/disable prints. */
+#define PRINT 0 /* enable/disable prints. */
 #define WORD_LENGTH 5
 
 #if PRINT
@@ -45,14 +45,6 @@ struct node
     int visited;
     node *pred;
 };
-
-/*
-typedef struct edge edge;
-struct node{
-    g_node* u;
-    g_node* v;
-};
-*/
 
 typedef struct graph graph;
 
@@ -119,7 +111,6 @@ graph *init_graph(int n)
         }
     }
 
-    // pr("g2\n");
     char tempWord[WORD_LENGTH];
     char tempChar;
     int letterMissing = 0;
@@ -130,13 +121,11 @@ graph *init_graph(int n)
         {
             if (i != j)
             {
-                // pr("g2.2\n");
                 letterMissing = 0;
                 for (int o = 0; o < WORD_LENGTH; o++)
                 {
                     tempWord[o] = g->nodes[j].word[o];
                 }
-                // pr("g2.3\n");
                 for (int outerWordIndex = 1; outerWordIndex < WORD_LENGTH; outerWordIndex++)
                 {
                     temp_char = current_node->word[outerWordIndex];
@@ -158,7 +147,6 @@ graph *init_graph(int n)
                         break;
                     }
                 }
-                // pr("g2.4\n");
                 if (letterMissing == 0)
                 {
                     list *adjacentNode = (list *)malloc(sizeof(list));
@@ -166,7 +154,6 @@ graph *init_graph(int n)
                     adjacentNode->next = current_node->adjacency;
                     current_node->adjacency = adjacentNode;
                 }
-                // pr("g2.5\n");
             }
         }
     }
@@ -176,25 +163,19 @@ graph *init_graph(int n)
 
 void enqueue(queue *q, node *node)
 {
-    //pr("ENQ1\n");
     list *insertee = (list *)calloc(1, sizeof(list));
     insertee->node = node;
     insertee->next = NULL;
-    //pr("ENQ2\n");
     if (q->first == NULL)
-    {   //pr("ENQ2.1\n");
+    { 
         q->first = insertee;
         q->last = insertee;
     }
     else
     {   
-        //pr("ENQ2.2\n");
         q->last->next = insertee;
-        //pr("ENQ2.3\n");
-        q->last = insertee;
-        
+        q->last = insertee; 
     }
-    //pr("ENQ3\n");
 }
 
 node* dequeue(queue *q)
@@ -227,28 +208,29 @@ node* dequeue(queue *q)
 }
 
 node* BFS(graph *g, int rootIndex, int stopIndex)
-{
-
-    node* tempNode; //= (node*)calloc(1,sizeof(node));
-    queue* nodeQueue = (queue*)calloc(1,sizeof(queue));
-    list* adjacent; //= (list*)calloc(1,sizeof(list));
-
+{   //reset nodes between
     for (int i = 0; i < g->n; i++)
     {
         g->nodes[i].pred = NULL;
         g->nodes[i].visited = 0;
     }
-    //pr("BFS2\n");
-    enqueue(nodeQueue, &g->nodes[rootIndex]);
-    g->nodes[rootIndex].visited = 1; // Might be wrong assignment maybe dereference
 
+    if(rootIndex == stopIndex){
+        return &g->nodes[rootIndex];
+    }
+
+    node* tempNode;
+    queue* nodeQueue = (queue*)calloc(1,sizeof(queue));
+    list* adjacent;
+    //Insert root node
+    enqueue(nodeQueue, &g->nodes[rootIndex]);
+    g->nodes[rootIndex].visited = 1; 
+    //while there are nodes go through their adjacencies
     while (nodeQueue->first != NULL)
     {   
         tempNode = dequeue(nodeQueue);
-        //printf("%d\n",tempNode->index);
         adjacent = tempNode->adjacency;
-
-        //pr("BFS5\n");
+        //put all adjacencies in queue
         while (adjacent != NULL)
         {
             if (adjacent->node->visited == 0)
@@ -264,7 +246,6 @@ node* BFS(graph *g, int rootIndex, int stopIndex)
             }
             adjacent = adjacent->next;
         }
-
     }
     free(nodeQueue);
     return NULL;
@@ -285,17 +266,17 @@ int main(int argc, char *argv[])
     pr("Number of queries: %d\n", q);
 
     graph *g = init_graph(n);
-    printAdjacent(g);
+    //printAdjacent(g);
 
+    //init needed resources
     char* word1 = (char*)calloc(WORD_LENGTH,sizeof(char));
     char* word2 = (char*)calloc(WORD_LENGTH,sizeof(char));
     char tempWord[WORD_LENGTH];
     node* returnNode;
-
+    
     // Go through all queries
     for (int outer = 0; outer < q; outer++)
     {   
-        //pr("New Query\n");
         int rootIndex = -1;
         int stopIndex = -1;
 
@@ -311,8 +292,6 @@ int main(int argc, char *argv[])
             word1[inner] = temp_char;
             
         }
-        pr("Root Word: %s\n",word1);
-        
         for (int inner2 = 0; inner2 < WORD_LENGTH; inner2++)
         {   
             char temp_char;
@@ -323,18 +302,21 @@ int main(int argc, char *argv[])
             }
             word2[inner2] = temp_char;
         }
+
+        pr("Root Word: %s\n",word1);
         pr("Stop Word: %s\n",word2);
+
         // get the indices of the two words
         for (int i = 0; i < g->n; i++)
         {
             strcpy(tempWord, g->nodes[i].word);
             pr("Word: %s\n",tempWord);
-            if (strcmp(word1, tempWord))
-            {
+            if (!strcmp(word1, tempWord))
+            {   
                 rootIndex = i;
                 pr("Got root index\n");
             }
-            if (strcmp(word2, tempWord))
+            if (!strcmp(word2, tempWord))
             {
                 stopIndex = i;
                 pr("Got stop index\n");
@@ -351,6 +333,7 @@ int main(int argc, char *argv[])
             printf("At least one of the words in the querey does not exist\n");
         }
         pr("root index: %d stop index:%d\n",rootIndex,stopIndex);
+        
         //run algorithm and print depending on result
         returnNode = BFS(g,rootIndex,stopIndex);
         if(returnNode == NULL){
@@ -365,7 +348,7 @@ int main(int argc, char *argv[])
             printf("%d\n",depth);
         }
     }
-
+    
     // Free the allocated resources
     list *templist_1;
     list *templist_2;
