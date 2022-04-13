@@ -33,28 +33,15 @@ struct  arc
     node *v;
     int index;
     int minutes;
+    arc* next;
 };
 
-
-struct arc_queue
-{
-    arc_list *first;
-    arc_list *last;
-};
-
-
-
-struct arc_list
-{
-    node *arc;
-    arc_list *next;
-};
 
 struct node
 {
     int index;
     arc_list *arc;
-    node *next;
+    node *parrent;
 };
 struct graph
 {
@@ -75,15 +62,15 @@ static int next_int()
     return x;
 }
 
-
 graph* initGraph(int n, int p){
     graph *g = (graph *)malloc(sizeof(graph));
     node *nodes = (node *)malloc(n*sizeof(node));
     arc *arcs = (arc *)malloc(p*sizeof(arc));
 
-    
     g->arcs = arcs;
     g->nodes = nodes;
+    g->n = n;
+    g->p = p;
 
     if (PRINT)
     {
@@ -94,19 +81,117 @@ graph* initGraph(int n, int p){
         
     }
     
-    
-
-
     int temp;
-    for (size_t i = 0; p < n; i++)
+    for (int i = 0; i < p; i++)
     {   
+        pr("Inputted Arc: %d ",i);
         g->arcs[i].index = i;
-        scanf("%d",temp);
+        scanf("%d",&temp);
+        pr("u: %d ",temp);
         g->arcs[i].u = &g->nodes[temp];
-        g->nodes[temp].index = temp;
+        scanf("%d",&temp);
+        pr("v: %d ",temp);
+        g->arcs[i].v = &g->nodes[temp];
+        scanf("%d",&temp);
+        pr("weight: %d\n",temp);
+        g->arcs[i].minutes = temp;
     }
     
+    return g;
+}
 
+void swapArray(arc* arr,int i,int j)
+{
+    arc temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+}
+
+void heapify(arc* arr, int n, int i)
+{
+    int largest = i; // Initialize largest as root
+    int l = 2 * i + 1; // left = 2*i + 1
+    int r = 2 * i + 2; // right = 2*i + 2
+ 
+    // If left child is larger than root
+    if (l < n && arr[l].minutes > arr[largest].minutes)
+        largest = l;
+ 
+    // If right child is larger than largest so far
+    if (r < n && arr[r].minutes > arr[largest].minutes)
+        largest = r;
+ 
+    // If largest is not root
+    if (largest != i) {
+        swapArray(arr,i,largest);
+ 
+        // Recursively heapify the affected sub-tree
+        heapify(arr, n, largest);
+    }
+}
+
+
+void heapSort(arc* arr, int n)
+{
+    // Build heap (rearrange array)
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+ 
+    // One by one extract an element from heap
+    for (int i = n - 1; i > 0; i--) {
+        // Move current root to end
+        swapArray(arr,0,i);
+ 
+        // call max heapify on the reduced heap
+        heapify(arr, i, 0);
+    }
+}
+
+void freeGraph(graph* g)
+{
+    free(g->arcs);
+    free(g->nodes);
+    free(g);
+}
+
+node* find(node* v){
+    if (v->parrent == NULL)
+        return v;
+    else
+        return find(v->parrent);
+    
+}
+
+void unite(node* u, node* v){
+    v->parrent = u;
+}
+
+
+arc* kruskal(graph* g){
+    arc* returnTree;
+    arc* tempArc;
+    node* temp1;
+    node* temp2;
+
+    heapSort(g->arcs,g->p);
+
+    for (int i = 0; i < g->p; i++)
+    {   
+        temp1 = find(g->arcs[i].u);
+        temp2 = find(g->arcs[i].v);
+        if (temp1 != temp2){
+            unite(temp1,temp2);
+            if (returnTree != NULL){
+                g->arcs[i].next = returnTree;
+                returnTree = &g->arcs[i];
+            }else{
+                returnTree = &g->arcs[i];
+            }
+        }
+
+    }
+
+    return returnTree;
 }
 
 int main(int argc, char *argv[])
@@ -125,5 +210,21 @@ int main(int argc, char *argv[])
     pr("Number of pairs: %d\n",p);
     
     graph* g = initGraph(n,p);
+    arc* tree = kruskal(g);
+
+    pr("Done with algo");
+
+    int sum = 0;
+    while (tree != NULL)
+    {   
+       sum = sum + tree->minutes;
+       pr("cumulative sum: %d\n",sum);
+       tree = tree->next;
+    }
     
+    printf("%d\n",sum);
+    
+    freeGraph(g);
+    
+    return 0;
 }
