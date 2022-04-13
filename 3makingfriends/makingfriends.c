@@ -187,6 +187,7 @@ arc* kruskal(graph* g){
             }else{
                 returnTree = &g->arcs[i];
             }
+            pr("Inserted : %d with weight: %d\n",returnTree->index,returnTree->minutes);
         }
 
     }
@@ -212,12 +213,13 @@ int main(int argc, char *argv[])
     graph* g = initGraph(n,p);
     arc* tree = kruskal(g);
 
-    pr("Done with algo");
+    pr("Done with algo\n");
 
     int sum = 0;
     while (tree != NULL)
     {   
        sum = sum + tree->minutes;
+       pr("arc id: %d\n",tree->index);
        pr("cumulative sum: %d\n",sum);
        tree = tree->next;
     }
