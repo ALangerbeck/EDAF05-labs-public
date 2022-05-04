@@ -7,7 +7,6 @@
 #include <unistd.h>
 
 #define PRINT 0 /* enable/disable prints. */
-#define WORD_LENGTH 5
 
 #if PRINT
 #define pr(...)                       \
@@ -180,7 +179,7 @@ arc *kruskal(graph *g)
     node *temp2;
 
     heapSort(g->arcs, g->p);
-
+    
     for (int i = 0; i < g->p; i++)
     {
         pr("--- processing arc: %d (%d <-> %d) ---\n", g->arcs[i].index, g->arcs[i].u->index + 1, g->arcs[i].v->index + 1);
