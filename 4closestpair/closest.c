@@ -167,6 +167,7 @@ double bruteforce(int* px , int num_p,point* players){
 }
 
 double findClosest(int* px, int* py, point* players ,int num_p){
+    int i,j;
 
     pr("Iterations with : %d things\n",num_p);
     if (num_p <= 2)
@@ -198,20 +199,19 @@ double findClosest(int* px, int* py, point* players ,int num_p){
     double d = min(d1,d2);
     pr("initial distance :%f\n",d);
 
-    point* Sy = malloc(num_p * sizeof(point*));
+    point** sy = malloc(num_p * sizeof(point*));
+    int sy_lenght = 0;
 
 
-
-    for (int i = 0; i < num_p; i++) {
+    for (i = 0; i < num_p; i++) {
         pr("1: %d\n",i);
         if(mid != py[i]){
-            point temp_player1 = players[mid];
-            point temp_player2 = players[py[i]];
-            double temp_d = distance(temp_player1,temp_player2);
-            pr("3:%d dist = %f\n",i,temp_d);
-            if( temp_d < d){
-                d = temp_d;
-                /*
+            point* temp_player1 = &players[mid];
+            point* temp_player2 = &players[py[i]];
+            if( temp_player1->x_cord - temp_player2->x_cord < d){
+                sy[sy_lenght] = temp_player2;
+                sy_lenght++;
+                /*(point *)
                 if(listhead == NULL){
                     listhead->p = &players[py[i]];
                 }else{
@@ -223,11 +223,39 @@ double findClosest(int* px, int* py, point* players ,int num_p){
             }
         }
 	}
+
+    for (i = 0; i < sy_lenght; i++)
+    {   
+        int p;
+        if(sy_lenght < i +8)
+            p=sy_lenght;
+        else
+            p= i+8;
+        
+        for (j = i+1; j < p; j++)
+        {
+            pr("Points are %d and %d\n",sy[i]->index,sy[j]->index);
+            //double temp_d = distance(*sy[i],*sy[j]);
+            long xd = sy[i]->x_cord - sy[j]->x_cord;
+			long yd = sy[i]->y_cord - sy[j]->y_cord;
+            pr("Distances: %d and %d\n",xd,yd);
+			double distance = sqrt(xd*xd+yd*yd);
+
+            if (distance < d)
+                d = distance;
+                pr("New minDist: %f\n",d);
+        }
+        
+        
+
+    }
+    
     pr("A return value: %f\n",d);
     free(ly);
     free(lx);
     free(ry);
     free(rx);
+    free(sy);
     return d;
 
 }
