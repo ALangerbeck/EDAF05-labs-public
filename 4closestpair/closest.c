@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <math.h>
 
-#define PRINT 1 /* enable/disable prints. */
+#define PRINT 0 /* enable/disable prints. */
 
 #if PRINT
 #define pr(...)                       \
@@ -175,24 +175,27 @@ double findClosest(int* px, int* py, point* players ,int num_p){
         return bruteforce(px,num_p,players);
     }
 
-    int mid = num_p / 2;
+    int lh = num_p / 2;
+    int rh = lh;
+    if(num_p % 2 != 0)
+        rh = lh+1;
     
-    int *ly = malloc(mid * sizeof(int));
-    int *ry = malloc(mid * sizeof(int));
-    int *lx = malloc(mid * sizeof(int));
-    int *rx = malloc(mid * sizeof(int));
+    int *ly = malloc(lh * sizeof(int));
+    int *ry = malloc(rh * sizeof(int));
+    int *lx = malloc(lh * sizeof(int));
+    int *rx = malloc(rh * sizeof(int));
     if (!ly || !ry || !lx ||!rx) {
         // somethings fucked
         return -1.0;
     }
 
-    memcpy(ly, py, mid * sizeof(int));
-    memcpy(ry, py + mid, mid * sizeof(int));
-    memcpy(lx, py, mid * sizeof(int));
-    memcpy(rx, py + mid, mid * sizeof(int));
+    memcpy(ly, py, lh * sizeof(int));
+    memcpy(ry, py + lh, rh * sizeof(int));
+    memcpy(lx, py, lh * sizeof(int));
+    memcpy(rx, py + lh, rh * sizeof(int));
 
-    double d1 = findClosest(lx, ly, players, mid);
-	double d2 = findClosest(rx, ry,players, mid);
+    double d1 = findClosest(lx, ly, players, lh);
+	double d2 = findClosest(rx, ry,players, rh);
     
     pr("%f : %f\n",d1,d2);
 
@@ -205,8 +208,8 @@ double findClosest(int* px, int* py, point* players ,int num_p){
 
     for (i = 0; i < num_p; i++) {
         pr("1: %d\n",i);
-        if(mid != py[i]){
-            point* temp_player1 = &players[mid];
+        if(lh != py[i]){
+            point* temp_player1 = &players[lh];
             point* temp_player2 = &players[py[i]];
             if( temp_player1->x_cord - temp_player2->x_cord < d){
                 sy[sy_lenght] = temp_player2;
@@ -239,7 +242,7 @@ double findClosest(int* px, int* py, point* players ,int num_p){
             long xd = sy[i]->x_cord - sy[j]->x_cord;
 			long yd = sy[i]->y_cord - sy[j]->y_cord;
             pr("Distances: %d and %d\n",xd,yd);
-			double distance = sqrt(xd*xd+yd*yd);
+			double distance = sqrt((double)(xd*xd+yd*yd));
 
             if (distance < d)
                 d = distance;
